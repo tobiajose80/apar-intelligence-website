@@ -1,0 +1,1191 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apar-Intelligence — TCEQ APAR Report Automation</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Source+Serif+4:ital,opsz,wght@0,8..60,300;0,8..60,400;0,8..60,600;1,8..60,400&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+    :root {
+      --bg-deep: #080c14;
+      --bg-surface: #0f1520;
+      --bg-elevated: #161e2e;
+      --bg-card: #1a2436;
+      --accent: #c9963b;
+      --accent-dim: #a07830;
+      --accent-glow: rgba(201, 150, 59, 0.12);
+      --text-primary: #e6e1d8;
+      --text-body: #b8b2a6;
+      --text-muted: #6e7a8e;
+      --text-bright: #f5f2ec;
+      --border: rgba(201, 150, 59, 0.15);
+      --border-subtle: rgba(255, 255, 255, 0.06);
+      --danger-soft: #c94b4b;
+      --font-display: 'Bebas Neue', sans-serif;
+      --font-body: 'Source Serif 4', Georgia, serif;
+      --max-width: 1140px;
+      --section-pad: 100px;
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-deep);
+      color: var(--text-body);
+      font-size: 17px;
+      line-height: 1.7;
+      -webkit-font-smoothing: antialiased;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='1'/%3E%3C/svg%3E");
+      opacity: 0.025;
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    body::after {
+      content: '';
+      position: fixed;
+      top: 0; left: 0; right: 0; height: 100vh;
+      background:
+        radial-gradient(ellipse at 15% 30%, rgba(201, 150, 59, 0.04) 0%, transparent 55%),
+        radial-gradient(ellipse at 85% 15%, rgba(30, 60, 90, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      max-width: var(--max-width);
+      margin: 0 auto;
+      padding: 0 32px;
+      position: relative;
+      z-index: 1;
+    }
+
+    .section-label {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 0.25em;
+      color: var(--accent);
+      text-transform: uppercase;
+      margin-bottom: 14px;
+      display: block;
+    }
+
+    h2 {
+      font-family: var(--font-display);
+      font-size: clamp(36px, 5vw, 52px);
+      color: var(--text-bright);
+      letter-spacing: 0.02em;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+
+    .lead {
+      font-size: 19px;
+      color: var(--text-body);
+      max-width: 640px;
+      line-height: 1.7;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      padding: 18px 0;
+      background: rgba(8, 12, 20, 0.85);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    nav .container {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .logo {
+      font-family: var(--font-display);
+      font-size: 24px;
+      color: var(--text-bright);
+      letter-spacing: 0.08em;
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .logo-mark {
+      width: 28px;
+      height: 28px;
+      border: 2px solid var(--accent);
+      border-radius: 4px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    .nav-cta {
+      font-family: var(--font-display);
+      font-size: 14px;
+      letter-spacing: 0.15em;
+      color: var(--accent);
+      text-decoration: none;
+      border: 1px solid var(--accent-dim);
+      padding: 10px 24px;
+      border-radius: 3px;
+      transition: all 0.25s ease;
+    }
+
+    .nav-cta:hover {
+      background: var(--accent);
+      color: var(--bg-deep);
+    }
+
+    /* HERO — centered */
+    .hero {
+      padding-top: 160px;
+      padding-bottom: 80px;
+      position: relative;
+      overflow: hidden;
+      text-align: center;
+    }
+
+    .hero::before {
+      content: '';
+      position: absolute;
+      top: 0; right: -20%;
+      width: 600px; height: 600px;
+      background: radial-gradient(circle, rgba(201, 150, 59, 0.05) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-content {
+      max-width: 780px;
+      margin: 0 auto;
+    }
+
+    .hero h1 {
+      font-family: var(--font-display);
+      font-size: clamp(42px, 6vw, 68px);
+      color: var(--text-bright);
+      letter-spacing: 0.02em;
+      line-height: 1.0;
+      margin-bottom: 24px;
+    }
+
+    .hero h1 span { color: var(--accent); }
+
+    .hero-sub {
+      font-size: 19px;
+      color: var(--text-body);
+      line-height: 1.7;
+      margin-bottom: 36px;
+      max-width: 620px;
+      margin-left: auto;
+      margin-right: auto;
+    }
+
+    .hero-sub strong { color: var(--text-primary); font-weight: 600; }
+
+    .cta-group {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-bottom: 12px;
+    }
+
+    .btn-primary {
+      font-family: var(--font-display);
+      font-size: 16px;
+      letter-spacing: 0.18em;
+      background: var(--accent);
+      color: var(--bg-deep);
+      padding: 16px 36px;
+      border: none;
+      border-radius: 3px;
+      cursor: pointer;
+      text-decoration: none;
+      transition: all 0.25s ease;
+      display: inline-block;
+    }
+
+    .btn-primary:hover {
+      background: #d9a84a;
+      transform: translateY(-1px);
+      box-shadow: 0 8px 30px rgba(201, 150, 59, 0.2);
+    }
+
+    .btn-secondary {
+      font-family: var(--font-display);
+      font-size: 14px;
+      letter-spacing: 0.12em;
+      color: var(--text-muted);
+      text-decoration: none;
+      padding: 16px 8px;
+      border-bottom: 1px solid var(--border-subtle);
+      transition: color 0.2s ease, border-color 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      color: var(--text-primary);
+      border-color: var(--text-muted);
+    }
+
+    /* VIDEO */
+    .video-section { padding-bottom: var(--section-pad); }
+
+    .video-encouragement {
+      text-align: center;
+      margin-bottom: 28px;
+    }
+
+    .video-encouragement p {
+      font-size: 15px;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+
+    .video-encouragement p em {
+      color: var(--accent);
+      font-style: normal;
+      font-weight: 600;
+    }
+
+    .video-wrapper {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+      border-radius: 8px;
+      overflow: hidden;
+      border: 1px solid var(--border);
+      box-shadow:
+        0 0 0 1px rgba(201, 150, 59, 0.05),
+        0 20px 60px rgba(0, 0, 0, 0.5),
+        0 4px 20px rgba(0, 0, 0, 0.3);
+      background: var(--bg-surface);
+      aspect-ratio: 16 / 9;
+    }
+
+    .video-overlay {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+      z-index: 2;
+      background: rgba(8, 12, 20, 0.2);
+      transition: background 0.3s ease;
+    }
+
+    .video-overlay:hover {
+      background: rgba(8, 12, 20, 0.05);
+    }
+
+    .video-overlay .thumb {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      filter: brightness(0.45);
+      pointer-events: none;
+      transition: filter 0.3s ease;
+    }
+
+    .video-overlay:hover .thumb {
+      filter: brightness(0.55);
+    }
+
+    .video-overlay.hidden { display: none; }
+
+    .video-overlay-content {
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      pointer-events: auto;
+    }
+
+    .play-btn {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 2px solid var(--accent);
+      background: rgba(201, 150, 59, 0.1);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 16px;
+      transition: all 0.3s ease;
+      cursor: pointer;
+    }
+
+    .play-btn svg {
+      width: 28px;
+      height: 28px;
+      fill: var(--accent);
+      margin-left: 4px;
+      pointer-events: none;
+    }
+
+    .video-overlay:hover .play-btn {
+      background: rgba(201, 150, 59, 0.25);
+      transform: scale(1.08);
+      box-shadow: 0 0 40px rgba(201, 150, 59, 0.15);
+    }
+
+    .video-overlay .play-label {
+      font-family: var(--font-display);
+      font-size: 14px;
+      letter-spacing: 0.2em;
+      color: var(--text-muted);
+      position: relative;
+      pointer-events: none;
+    }
+
+    /* PAIN — heading centered, grid left-aligned */
+    .pain-section {
+      padding: var(--section-pad) 0;
+      position: relative;
+    }
+
+    .pain-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    .pain-header {
+      text-align: center;
+      margin-bottom: 0;
+    }
+
+    .pain-header .section-label {
+      display: block;
+    }
+
+    .pain-header h2 {
+      margin-bottom: 0;
+    }
+
+    .pain-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: start;
+      margin-top: 48px;
+    }
+
+    .pain-narrative p { margin-bottom: 20px; font-size: 17px; }
+
+    .pain-narrative p:first-of-type::first-letter {
+      font-family: var(--font-display);
+      font-size: 48px;
+      color: var(--accent);
+      float: left;
+      line-height: 0.85;
+      margin-right: 8px;
+      margin-top: 6px;
+    }
+
+    .pain-points {
+      display: flex;
+      flex-direction: column;
+      gap: 20px;
+    }
+
+    .pain-point {
+      padding: 24px 28px;
+      background: var(--bg-surface);
+      border-left: 3px solid var(--danger-soft);
+      border-radius: 0 6px 6px 0;
+    }
+
+    .pain-point h4 {
+      font-family: var(--font-display);
+      font-size: 18px;
+      letter-spacing: 0.06em;
+      color: var(--text-primary);
+      margin-bottom: 6px;
+    }
+
+    .pain-point p {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.6;
+    }
+
+    /* SOLUTION — heading + intro centered */
+    .solution-section {
+      padding: var(--section-pad) 0;
+      position: relative;
+      text-align: center;
+    }
+
+    .solution-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    .solution-intro {
+      max-width: 680px;
+      margin: 0 auto 56px;
+    }
+
+    .steps-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 28px;
+      text-align: left;
+    }
+
+    .step-card {
+      padding: 36px 30px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border-subtle);
+      border-radius: 6px;
+      position: relative;
+      transition: border-color 0.3s ease, transform 0.3s ease;
+    }
+
+    .step-card:hover {
+      border-color: var(--border);
+      transform: translateY(-3px);
+    }
+
+    .step-number {
+      font-family: var(--font-display);
+      font-size: 48px;
+      color: rgba(201, 150, 59, 0.15);
+      position: absolute;
+      top: 20px;
+      right: 24px;
+      line-height: 1;
+    }
+
+    .step-card h3 {
+      font-family: var(--font-display);
+      font-size: 22px;
+      letter-spacing: 0.04em;
+      color: var(--text-bright);
+      margin-bottom: 12px;
+      position: relative;
+    }
+
+    .step-card h3::after {
+      content: '';
+      display: block;
+      width: 32px;
+      height: 2px;
+      background: var(--accent);
+      margin-top: 10px;
+    }
+
+    .step-card p {
+      font-size: 15px;
+      color: var(--text-muted);
+      line-height: 1.65;
+    }
+
+    /* FEATURES — header centered, blocks left-aligned */
+    .features-section {
+      padding: var(--section-pad) 0;
+      position: relative;
+    }
+
+    .features-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    .features-header {
+      max-width: 680px;
+      margin: 0 auto 60px;
+      text-align: center;
+    }
+
+    .feature-block {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 60px;
+      align-items: center;
+      margin-bottom: 80px;
+      padding-bottom: 80px;
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .feature-block:last-child {
+      margin-bottom: 0;
+      padding-bottom: 0;
+      border-bottom: none;
+    }
+
+    .feature-block.reversed .feature-visual { order: -1; }
+
+    .feature-text h3 {
+      font-family: var(--font-display);
+      font-size: 32px;
+      color: var(--text-bright);
+      letter-spacing: 0.02em;
+      margin-bottom: 18px;
+    }
+
+    .feature-text h3::after {
+      content: '';
+      display: block;
+      width: 40px;
+      height: 2px;
+      background: var(--accent);
+      margin-top: 12px;
+    }
+
+    .feature-text p {
+      font-size: 16px;
+      color: var(--text-body);
+      margin-bottom: 16px;
+      line-height: 1.7;
+    }
+
+    .feature-detail-list { list-style: none; margin-top: 20px; }
+
+    .feature-detail-list li {
+      padding: 8px 0;
+      padding-left: 24px;
+      position: relative;
+      font-size: 15px;
+      color: var(--text-muted);
+      border-bottom: 1px solid var(--border-subtle);
+    }
+
+    .feature-detail-list li:last-child { border-bottom: none; }
+
+    .feature-detail-list li::before {
+      content: '\203A';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+      font-size: 18px;
+      font-weight: 700;
+    }
+
+    .feature-visual {
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 32px;
+      position: relative;
+      min-height: 320px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+
+    .mock-bar {
+      height: 10px;
+      background: var(--bg-elevated);
+      border-radius: 5px;
+      margin-bottom: 12px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .mock-bar::after {
+      content: '';
+      position: absolute;
+      left: 0; top: 0; bottom: 0;
+      background: linear-gradient(90deg, var(--accent-dim), var(--accent));
+      border-radius: 5px;
+    }
+
+    .mock-bar.w60::after { width: 60%; }
+    .mock-bar.w80::after { width: 80%; }
+    .mock-bar.w40::after { width: 40%; }
+    .mock-bar.w100::after { width: 100%; }
+
+    .mock-row { display: flex; gap: 12px; margin-bottom: 10px; }
+
+    .mock-cell {
+      flex: 1;
+      height: 36px;
+      background: var(--bg-elevated);
+      border-radius: 4px;
+      border: 1px solid var(--border-subtle);
+      display: flex;
+      align-items: center;
+      padding: 0 12px;
+      font-size: 11px;
+      color: var(--text-muted);
+      font-family: 'Courier New', monospace;
+      letter-spacing: 0.03em;
+    }
+
+    .mock-cell.highlight {
+      border-color: var(--accent-dim);
+      background: rgba(201, 150, 59, 0.06);
+      color: var(--accent);
+    }
+
+    .mock-header {
+      font-family: var(--font-display);
+      font-size: 13px;
+      letter-spacing: 0.15em;
+      color: var(--text-muted);
+      margin-bottom: 16px;
+      text-transform: uppercase;
+    }
+
+    .mock-timer {
+      font-family: var(--font-display);
+      font-size: 52px;
+      color: var(--accent);
+      letter-spacing: 0.05em;
+      text-align: center;
+      margin: 12px 0;
+    }
+
+    .mock-timer-label {
+      text-align: center;
+      font-size: 12px;
+      color: var(--text-muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      font-family: var(--font-display);
+    }
+
+    .mock-check {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 0;
+      font-size: 13px;
+      color: var(--text-muted);
+      font-family: 'Courier New', monospace;
+    }
+
+    .mock-check .check-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 3px;
+      background: rgba(201, 150, 59, 0.15);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: var(--accent);
+      font-size: 11px;
+      flex-shrink: 0;
+    }
+
+    .mock-formats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-top: 12px;
+    }
+
+    .mock-format-card {
+      background: var(--bg-elevated);
+      border: 1px solid var(--border-subtle);
+      border-radius: 5px;
+      padding: 14px;
+      text-align: center;
+    }
+
+    .mock-format-card .format-icon {
+      font-family: var(--font-display);
+      font-size: 18px;
+      color: var(--accent);
+      margin-bottom: 4px;
+    }
+
+    .mock-format-card .format-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      font-family: var(--font-display);
+    }
+
+    /* CTA — already centered */
+    .cta-section {
+      padding: var(--section-pad) 0 120px;
+      position: relative;
+    }
+
+    .cta-section::before {
+      content: '';
+      position: absolute;
+      top: 0; left: 0; right: 0;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border), transparent);
+    }
+
+    .cta-card {
+      max-width: 720px;
+      margin: 0 auto;
+      text-align: center;
+      padding: 64px 48px;
+      background: var(--bg-surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .cta-card::before {
+      content: '';
+      position: absolute;
+      top: -50%; left: -50%;
+      width: 200%; height: 200%;
+      background: radial-gradient(ellipse at center, rgba(201, 150, 59, 0.04) 0%, transparent 50%);
+      pointer-events: none;
+    }
+
+    .cta-card h2 { margin-bottom: 18px; }
+
+    .cta-card .lead {
+      max-width: 500px;
+      margin: 0 auto 36px;
+      text-align: center;
+    }
+
+    .cta-card .btn-primary { font-size: 18px; padding: 18px 48px; }
+
+    .cta-micro {
+      margin-top: 20px;
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 32px 0;
+      border-top: 1px solid var(--border-subtle);
+      text-align: center;
+    }
+
+    footer p {
+      font-size: 13px;
+      color: var(--text-muted);
+      letter-spacing: 0.03em;
+    }
+
+    footer a { color: var(--accent-dim); text-decoration: none; }
+
+    /* ANIMATIONS */
+    .fade-up {
+      opacity: 0;
+      transform: translateY(24px);
+      animation: fadeUp 0.7s ease forwards;
+    }
+
+    .fade-up.d1 { animation-delay: 0.1s; }
+    .fade-up.d2 { animation-delay: 0.2s; }
+    .fade-up.d3 { animation-delay: 0.3s; }
+    .fade-up.d4 { animation-delay: 0.4s; }
+    .fade-up.d5 { animation-delay: 0.5s; }
+
+    @keyframes fadeUp {
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 900px) {
+      .pain-grid, .feature-block {
+        grid-template-columns: 1fr;
+        gap: 32px;
+      }
+      .feature-block.reversed .feature-visual { order: 0; }
+      .steps-grid { grid-template-columns: 1fr; gap: 20px; }
+      :root { --section-pad: 64px; }
+    }
+
+    @media (max-width: 600px) {
+      :root { --section-pad: 48px; }
+      .hero { padding-top: 120px; }
+      h1 { font-size: 36px !important; }
+      .cta-group { flex-direction: column; align-items: center; }
+      .mock-formats { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <div class="container">
+      <a href="#" class="logo">
+        <span class="logo-mark">AI</span>
+        Apar-Intelligence
+      </a>
+      <a href="#get-started" class="nav-cta">GET STARTED</a>
+    </div>
+  </nav>
+
+  <!-- HERO — centered -->
+  <section class="hero">
+    <div class="container">
+      <div class="hero-content">
+        <h1 class="fade-up">Stop Spending Hours <br>Formatting Raw Lab Data <br>for <span>TCEQ Reports</span></h1>
+        <p class="hero-sub fade-up d1">
+          Upload raw lab data. Receive a complete, <strong>audit-ready APAR report in minutes</strong> &mdash;
+          formatted exactly to your firm's standards, with every CAS number verified and every
+          value cross-checked against your source files.
+        </p>
+        <div class="cta-group fade-up d2">
+          <a href="#get-started" class="btn-primary">REQUEST YOUR PILOT</a>
+          <a href="#demo" class="btn-secondary">Watch the Demo First &rarr;</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- VIDEO -->
+  <section class="video-section" id="demo">
+    <div class="container">
+      <div class="video-encouragement fade-up">
+        <p>See it in action: <em>Watch the 3-minute raw-to-report extraction demo below.</em> No signup required.</p>
+      </div>
+      <div class="video-wrapper fade-up d1" id="videoContainer">
+        <div class="video-overlay" id="videoOverlay" role="button" tabindex="0" aria-label="Play demo video">
+          <img
+            class="thumb"
+            src="https://img.youtube.com/vi/d6KFUBHqD64/hqdefault.jpg"
+            alt="Apar-Intelligence demo preview"
+          >
+          <div class="video-overlay-content">
+            <div class="play-btn" id="playBtn">
+              <svg viewBox="0 0 24 24"><polygon points="6,3 20,12 6,21"></polygon></svg>
+            </div>
+            <span class="play-label">PLAY DEMO &mdash; 3:00</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PAIN STATEMENT — heading centered, grid left-aligned -->
+  <section class="pain-section">
+    <div class="container">
+      <div class="pain-header">
+        <span class="section-label">The Problem</span>
+        <h2>You Didn't Become a Consultant <br>to Drown in Lab PDFs</h2>
+      </div>
+      <div class="pain-grid">
+        <div class="pain-narrative">
+          <p>Every project starts the same way. A lab sends over raw data files &mdash; sometimes
+          60, 80, even 120 pages long &mdash; packed with mixed tables, QC samples, method blanks,
+          surrogates, and detection limits that have nothing to do with your specific site.
+          Somewhere buried in all of that noise are the values you actually need.</p>
+          <p>You open the PDF. You start scrolling. You start copying.
+          You start second-guessing whether the value in row 14 of Table 3 matches
+          the CAS number you entered two cells back. You switch between windows,
+          cross-referencing against your spreadsheet, your checklist, your memory
+          of what the last report looked like.</p>
+          <p>Three hours later, you have a draft &mdash; and you still haven't checked it.</p>
+        </div>
+        <div class="pain-points">
+          <div class="pain-point">
+            <h4>Dozens of Pages, Most of It Irrelevant</h4>
+            <p>Raw lab deliverables are bloated. You're manually extracting data from files
+            designed for lab QA/QC &mdash; not for TCEQ APAR formatting. Standard tools choke
+            on the volume or can't parse the structure at all.</p>
+          </div>
+          <div class="pain-point">
+            <h4>Manual Entry Means Manual Errors</h4>
+            <p>CAS numbers transposed. Concentrations misread. Units missed during conversion.
+            Every manual keystroke is a liability &mdash; especially when your name is on the report
+            and the deadline was yesterday.</p>
+          </div>
+          <div class="pain-point">
+            <h4>Formatting Overhead Eats Your Margins</h4>
+            <p>Even after the data is correct, you still need to format the report. Match your
+            firm's layout. Match TCEQ's expectations. Match the look of every report your
+            client has seen before. That's billable hours burned on presentation, not analysis.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- SOLUTION — heading + intro centered, cards left-aligned -->
+  <section class="solution-section">
+    <div class="container">
+      <span class="section-label">How It Works</span>
+      <h2>Three Steps. One Upload. <br>A Complete APAR Report.</h2>
+      <p class="lead solution-intro">
+        Apar-Intelligence is purpose-built for one workflow: transforming raw analytical lab
+        data into TCEQ-compliant APAR reports. No general-purpose spreadsheet hacks.
+        No workarounds. Just a direct, auditable pipeline from raw file to finished document.
+      </p>
+      <div class="steps-grid">
+        <div class="step-card fade-up">
+          <span class="step-number">01</span>
+          <h3>Select Your Page Ranges</h3>
+          <p>Open the upload interface and specify exactly which page ranges contain
+          the relevant analytical data. The system only processes what you designate &mdash;
+          no bloated parsing, no wasted compute, no surprises from extraneous lab QC pages
+          contaminating your results.</p>
+        </div>
+        <div class="step-card fade-up d1">
+          <span class="step-number">02</span>
+          <h3>Upload &amp; Let It Parse</h3>
+          <p>Drop your raw lab PDF into the secure upload queue. Apar-Intelligence extracts
+          the analytical values, compound identifiers, CAS numbers, method references, and
+          reporting limits from your selected ranges &mdash; structuring them into an organized,
+          queryable dataset in real time.</p>
+        </div>
+        <div class="step-card fade-up d2">
+          <span class="step-number">03</span>
+          <h3>Review, Cross-Check, Generate</h3>
+          <p>Use the built-in cross-check dashboard to verify every extracted value against
+          your source file. Fill in missing CAS numbers from the integrated database. Then
+          generate your APAR report in your firm's exact format &mdash; ready for review,
+          ready for submission.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FEATURES — header centered, feature blocks left-aligned -->
+  <section class="features-section">
+    <div class="container">
+      <div class="features-header">
+        <span class="section-label">Core Capabilities</span>
+        <h2>Built Around How You <br>Actually Work</h2>
+        <p class="lead">Not a generic data tool repurposed for environmental reporting.
+        Every feature exists because a consultant asked for it, or because the manual
+        alternative was costing real hours on real projects.</p>
+      </div>
+
+      <!-- Feature 1: Processing Dashboard -->
+      <div class="feature-block">
+        <div class="feature-text">
+          <h3>Processing Dashboard</h3>
+          <p>When you submit a file, you see exactly what's happening &mdash; not a black box
+          spinner. The dashboard tracks real-time processing status: page parsing, data
+          extraction, value validation, and document generation. Each stage shows
+          elapsed time so you know whether your 80-page file will take 90 seconds
+          or four minutes.</p>
+          <p>This isn't just a progress bar. It's transparency you can plan around.
+          If you're batching multiple site reports, you can queue them sequentially
+          and see aggregate processing time across your entire submission.</p>
+          <ul class="feature-detail-list">
+            <li>Stage-by-stage time tracking per upload</li>
+            <li>Multi-file queue visibility for batch processing</li>
+            <li>Processing history log for project documentation</li>
+          </ul>
+        </div>
+        <div class="feature-visual">
+          <div class="mock-header">Processing Queue</div>
+          <div class="mock-bar w100" style="margin-bottom:18px;"></div>
+          <div class="mock-timer">02:14</div>
+          <div class="mock-timer-label">Estimated Time Remaining</div>
+          <div style="margin-top: 24px;">
+            <div class="mock-check"><span class="check-icon">&#10003;</span> Page range parsed &mdash; 24 pages detected</div>
+            <div class="mock-check"><span class="check-icon">&#10003;</span> Analytical values extracted &mdash; 186 data points</div>
+            <div class="mock-check"><span class="check-icon">&#10003;</span> CAS numbers matched &mdash; 43 of 47 verified</div>
+            <div class="mock-check" style="color: var(--text-body);"><span class="check-icon" style="background: rgba(201,150,59,0.25);">&#10227;</span> Generating APAR document...</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 2: Cross-Check Database -->
+      <div class="feature-block reversed">
+        <div class="feature-text">
+          <h3>Cross-Check Database</h3>
+          <p>Every extracted value is placed into a structured, side-by-side database that
+          mirrors your source PDF. You see the original lab value on the left and the
+          extracted value on the right &mdash; aligned row by row, compound by compound.</p>
+          <p>When the lab report is missing a CAS number or uses an uncommon analyte name,
+          the system flags it and suggests matches from an integrated chemical reference
+          database. You confirm or override in one click. No separate lookups. No switching
+          to a browser tab to search a CAS registry.</p>
+          <ul class="feature-detail-list">
+            <li>Side-by-side value comparison against source PDF</li>
+            <li>Automatic CAS number lookup for flagged compounds</li>
+            <li>Override and annotation capability for consultant review</li>
+            <li>Audit trail documenting every value confirmation</li>
+          </ul>
+        </div>
+        <div class="feature-visual">
+          <div class="mock-header">Cross-Check View</div>
+          <div class="mock-row">
+            <div class="mock-cell" style="flex:1.5;">Benzene</div>
+            <div class="mock-cell">71-43-2</div>
+            <div class="mock-cell highlight">0.0042</div>
+            <div class="mock-cell highlight">0.0042</div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-cell" style="flex:1.5;">Toluene</div>
+            <div class="mock-cell">108-88-3</div>
+            <div class="mock-cell highlight">0.0018</div>
+            <div class="mock-cell highlight">0.0018</div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-cell" style="flex:1.5;">Ethylbenzene</div>
+            <div class="mock-cell" style="color: var(--danger-soft); border-color: var(--danger-soft);">Missing</div>
+            <div class="mock-cell">0.0009</div>
+            <div class="mock-cell">0.0009</div>
+          </div>
+          <div class="mock-row">
+            <div class="mock-cell" style="flex:1.5;">Xylenes (total)</div>
+            <div class="mock-cell">1330-20-7</div>
+            <div class="mock-cell highlight">0.0031</div>
+            <div class="mock-cell highlight">0.0031</div>
+          </div>
+          <div style="margin-top: 16px; padding: 12px; background: rgba(201,150,59,0.06); border: 1px solid var(--border); border-radius: 4px; font-size: 12px; color: var(--accent);">
+            Ethylbenzene CAS# 100-41-4 suggested &mdash; click to accept
+          </div>
+        </div>
+      </div>
+
+      <!-- Feature 3: Full Customization Engine -->
+      <div class="feature-block">
+        <div class="feature-text">
+          <h3>Full Customization Engine</h3>
+          <p>Your firm has a way it presents APAR data. Specific table layouts. Specific
+          header formatting. Specific ordering of analytes, specific footnote conventions,
+          specific ways of handling non-detects and reporting limits. You've built that
+          over years of client relationships and TCEQ submissions.</p>
+          <p>Apar-Intelligence doesn't ask you to change that. During onboarding, your
+          report template is mapped to the system &mdash; cell by cell, section by section.
+          The generated output matches your existing format so precisely that your
+          review process doesn't change. The data just arrives pre-populated instead
+          of manually entered.</p>
+          <ul class="feature-detail-list">
+            <li>Template mapping to your firm's existing report layout</li>
+            <li>Custom analyte ordering, footnote styles, and ND handling</li>
+            <li>Multiple template profiles for different clients or project types</li>
+            <li>Output in your preferred format &mdash; ready for final review, not reformatting</li>
+          </ul>
+        </div>
+        <div class="feature-visual">
+          <div class="mock-header">Template Profiles</div>
+          <div class="mock-formats">
+            <div class="mock-format-card">
+              <div class="format-icon">Firm A</div>
+              <div class="format-label">Standard APAR</div>
+            </div>
+            <div class="mock-format-card">
+              <div class="format-icon">Firm A</div>
+              <div class="format-label">Client &ndash; Refinery</div>
+            </div>
+            <div class="mock-format-card">
+              <div class="format-icon">Firm B</div>
+              <div class="format-label">UST Compliance</div>
+            </div>
+            <div class="mock-format-card" style="border-color: var(--accent-dim);">
+              <div class="format-icon">+</div>
+              <div class="format-label">New Template</div>
+            </div>
+          </div>
+          <div style="margin-top: 20px;">
+            <div style="font-size: 12px; color: var(--text-muted); margin-bottom: 10px; font-family: var(--font-display); letter-spacing: 0.1em;">ACTIVE TEMPLATE SETTINGS</div>
+            <div class="mock-check"><span class="check-icon">&#10003;</span> Analyte order: alphabetical</div>
+            <div class="mock-check"><span class="check-icon">&#10003;</span> ND handling: show as "ND (&lt;RL)"</div>
+            <div class="mock-check"><span class="check-icon">&#10003;</span> Footnotes: auto-generated per method</div>
+            <div class="mock-check"><span class="check-icon">&#10003;</span> Header: firm logo + project ID</div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- CTA -->
+  <section class="cta-section" id="get-started">
+    <div class="container">
+      <div class="cta-card">
+        <span class="section-label">Get Started</span>
+        <h2>You Compile TCEQ Reports. <br>This Was Built for You.</h2>
+        <p class="lead">
+          If your workflow involves receiving raw analytical lab data and converting it
+          into APAR-formatted reports for TCEQ submission, Apar-Intelligence was designed
+          around your exact process &mdash; not a generic data tool repurposed for compliance work.
+        </p>
+        <a href="#" class="btn-primary">BOOK A DISCOVERY CALL</a>
+        <p class="cta-micro">
+          30-minute walkthrough with your own lab data. No commitment, no sales pitch &mdash;
+          just a direct demonstration of how this fits your reporting workflow.
+        </p>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="container">
+      <p>&copy; 2025 Apar-Intelligence. Purpose-built for TCEQ APAR report automation.</p>
+    </div>
+  </footer>
+
+  <!-- VIDEO PLAYER JS -->
+  <script>
+    (function () {
+      var overlay  = document.getElementById('videoOverlay');
+      var playBtn  = document.getElementById('playBtn');
+      var wrapper  = document.getElementById('videoContainer');
+      var loaded   = false;
+
+      function loadVideo(e) {
+        if (e) { e.preventDefault(); e.stopPropagation(); }
+        if (loaded) return;
+        loaded = true;
+
+        var iframe = document.createElement('iframe');
+        iframe.width  = '100%';
+        iframe.height = '100%';
+        iframe.src = 'https://www.youtube.com/embed/d6KFUBHqD64?autoplay=1&rel=0&modestbranding=1&playsinline=1';
+        iframe.title = 'Apar-Intelligence Demo';
+        iframe.frameBorder = '0';
+        iframe.allow = 'accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture';
+        iframe.allowFullscreen = true;
+        iframe.style.position = 'absolute';
+        iframe.style.inset    = '0';
+        iframe.style.width    = '100%';
+        iframe.style.height   = '100%';
+        iframe.style.border   = 'none';
+        iframe.style.borderRadius = '8px';
+
+        wrapper.appendChild(iframe);
+        overlay.classList.add('hidden');
+      }
+
+      overlay.addEventListener('click', loadVideo);
+      playBtn.addEventListener('click', loadVideo);
+
+      overlay.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' || e.key === ' ') {
+          loadVideo(e);
+        }
+      });
+    })();
+  </script>
+
+</body>
+</html>
